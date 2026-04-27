@@ -1,44 +1,40 @@
 package com.example.lms.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.example.lms.model.Course;
+import com.example.lms.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 
-import com.example.lms.model.Course;
+import java.util.List;
 
 @Service
 public class CourseService {
 
-    private final List<Course> courses = new ArrayList<>();
+    private final CourseRepository courseRepository;
 
-    public CourseService(){
-        courses.add(new Course(1L,"Full Stack Application Development","Dr. Smith","React + Spring Boot LMS project",24,120));
-        courses.add(new Course(2L,"Database Management Systems","Prof. Brown","SQL and normalization",18,95));
+    public CourseService(CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
     }
 
-    public List<Course> getCourses(){
-        return courses;
+    public List<Course> getCourses() {
+        return courseRepository.findAll();
     }
 
-    public Course addCourse(Course course){
-        course.setId((long)(courses.size()+1));
-        courses.add(course);
-        return course;
+    public Course addCourse(Course course) {
+        return courseRepository.save(course);
     }
 
-    public Course updateCourse(Long id,Course updated){
-        Course c = courses.stream().filter(x->x.getId().equals(id)).findFirst().orElse(null);
-        if(c!=null){
-            c.setTitle(updated.getTitle());
-            c.setInstructor(updated.getInstructor());
-            c.setDescription(updated.getDescription());
-            c.setLessons(updated.getLessons());
-        }
-        return c;
+    public Course updateCourse(Long id, Course updated) {
+        return courseRepository.findById(id).map(course -> {
+            course.setTitle(updated.getTitle());
+            course.setInstructor(updated.getInstructor());
+            course.setDescription(updated.getDescription());
+            course.setLessons(updated.getLessons());
+            course.setStudents(updated.getStudents());
+            return courseRepository.save(course);
+        }).orElse(null);
     }
 
-    public void deleteCourse(Long id){
-        courses.removeIf(c->c.getId().equals(id));
+    public void deleteCourse(Long id) {
+        courseRepository.deleteById(id);
     }
 }
